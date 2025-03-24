@@ -30,6 +30,8 @@ interface ChartProps {
   showGrid?: boolean;
   showTooltip?: boolean;
   showLegend?: boolean;
+  onPieClick?: (data: any, index: number) => void;
+  activeIndex?: number | null;
 }
 
 const DEFAULT_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A67BF4'];
@@ -45,6 +47,8 @@ const ChartComponent: React.FC<ChartProps> = ({
   showGrid = true,
   showTooltip = true,
   showLegend = false,
+  onPieClick,
+  activeIndex = null,
 }) => {
   const renderChart = () => {
     switch (type) {
@@ -118,9 +122,16 @@ const ChartComponent: React.FC<ChartProps> = ({
               fill="#8884d8"
               dataKey={dataKey}
               label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              onClick={onPieClick}
             >
-              {data.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+              {data.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={colors[index % colors.length]} 
+                  opacity={activeIndex === null || activeIndex === index ? 1 : 0.5}
+                  stroke={activeIndex === index ? "#333" : "none"}
+                  strokeWidth={activeIndex === index ? 2 : 0}
+                />
               ))}
             </Pie>
             {showTooltip && <Tooltip contentStyle={{ borderRadius: '8px' }} />}

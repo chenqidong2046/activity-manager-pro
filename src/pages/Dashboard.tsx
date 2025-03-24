@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   LayoutDashboard,
   Calendar,
@@ -8,10 +8,13 @@ import {
   CreditCard,
   AlertTriangle,
   PlusCircle,
+  Filter,
+  RefreshCw,
 } from 'lucide-react';
 import StatCard from '@/components/dashboard/StatCard';
 import DashboardCard from '@/components/dashboard/DashboardCard';
 import ChartComponent from '@/components/dashboard/ChartComponent';
+import CreditDataTable from '@/components/dashboard/CreditDataTable';
 import { Button } from '@/components/ui/button';
 
 // Mock data
@@ -33,6 +36,20 @@ const creditDistribution = [
   { name: '其他', value: 10 },
 ];
 
+// Extended credit data for the table
+const creditDetailData = [
+  { id: 1, category: '社会实践', name: '暑期三下乡', totalCredits: 3000, studentCount: 100, averageCredits: 30.0 },
+  { id: 2, category: '社会实践', name: '城市志愿行', totalCredits: 1800, studentCount: 60, averageCredits: 30.0 },
+  { id: 3, category: '志愿服务', name: '校园清洁日', totalCredits: 1200, studentCount: 80, averageCredits: 15.0 },
+  { id: 4, category: '志愿服务', name: '社区关爱行动', totalCredits: 1300, studentCount: 50, averageCredits: 26.0 },
+  { id: 5, category: '文体活动', name: '校园歌手大赛', totalCredits: 1000, studentCount: 40, averageCredits: 25.0 },
+  { id: 6, category: '文体活动', name: '篮球联赛', totalCredits: 1000, studentCount: 50, averageCredits: 20.0 },
+  { id: 7, category: '学术科研', name: '创新创业大赛', totalCredits: 750, studentCount: 30, averageCredits: 25.0 },
+  { id: 8, category: '学术科研', name: '学术论坛', totalCredits: 750, studentCount: 30, averageCredits: 25.0 },
+  { id: 9, category: '其他', name: '校园文化节', totalCredits: 500, studentCount: 50, averageCredits: 10.0 },
+  { id: 10, category: '其他', name: '新生晚会', totalCredits: 500, studentCount: 50, averageCredits: 10.0 },
+];
+
 const topActivities = [
   { id: 1, name: '校园歌手大赛', participants: 328, completion: 92 },
   { id: 2, name: '志愿者服务日', participants: 256, completion: 88 },
@@ -41,6 +58,34 @@ const topActivities = [
 ];
 
 const Dashboard: React.FC = () => {
+  // State for tracking which pie chart segment is active
+  const [activePieIndex, setActivePieIndex] = useState<number | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  // Handler for pie chart segment clicks
+  const handlePieClick = (data: any, index: number) => {
+    if (activePieIndex === index) {
+      // If clicking the same segment, clear the filter
+      setActivePieIndex(null);
+      setActiveCategory(null);
+    } else {
+      // Set the active segment and category
+      setActivePieIndex(index);
+      setActiveCategory(data.name);
+    }
+  };
+
+  // Clear the filter
+  const handleClearFilter = () => {
+    setActivePieIndex(null);
+    setActiveCategory(null);
+  };
+
+  // Filter the credit data based on the active category
+  const filteredCreditData = activeCategory 
+    ? creditDetailData.filter(item => item.category === activeCategory)
+    : creditDetailData;
+
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
@@ -103,13 +148,50 @@ const Dashboard: React.FC = () => {
         </DashboardCard>
         
         {/* Credit Distribution */}
-        <DashboardCard title="积分类型分布">
+        <DashboardCard 
+          title="积分类型分布"
+          actionButton={
+            activePieIndex !== null ? (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 text-xs"
+                onClick={handleClearFilter}
+              >
+                <RefreshCw size={14} className="mr-1" />
+                重置
+              </Button>
+            ) : null
+          }
+        >
           <ChartComponent 
             type="pie" 
             data={creditDistribution} 
             showTooltip={true}
             showLegend={true}
             height={250}
+            onPieClick={handlePieClick}
+            activeIndex={activePieIndex}
+          />
+        </DashboardCard>
+      </div>
+      
+      {/* Credit Data Report Section */}
+      <div className="mt-6">
+        <DashboardCard 
+          title="积分数据报表" 
+          className="w-full"
+          actionButton={
+            <Button variant="outline" size="sm" className="h-8 flex items-center gap-1">
+              <Filter size={14} />
+              <span>筛选</span>
+            </Button>
+          }
+        >
+          <CreditDataTable 
+            data={filteredCreditData} 
+            activeCategoryFilter={activeCategory}
+            onClearFilter={handleClearFilter}
           />
         </DashboardCard>
       </div>

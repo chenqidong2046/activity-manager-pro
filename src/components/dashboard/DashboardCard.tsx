@@ -6,12 +6,14 @@ interface DashboardCardProps {
   title: string;
   children: React.ReactNode;
   className?: string;
+  actionButton?: React.ReactNode;
 }
 
 const DashboardCard: React.FC<DashboardCardProps> = ({ 
   title, 
   children,
-  className
+  className,
+  actionButton
 }) => {
   return (
     <div 
@@ -20,7 +22,12 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
         className
       )}
     >
-      <h3 className="text-base font-medium text-card-foreground mb-3">{title}</h3>
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="text-base font-medium text-card-foreground">{title}</h3>
+        {actionButton && (
+          <div>{actionButton}</div>
+        )}
+      </div>
       <div className="text-card-foreground">{children}</div>
     </div>
   );
